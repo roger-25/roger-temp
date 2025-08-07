@@ -1,19 +1,24 @@
 pipeline {
     agent any
 
-  stages {
-        stage('Build') {
-            steps {
-                echo "Running build for branch: ${env.BRANCH_NAME}"
-            }
-        }
-        stage('Deploy Only If PR is Merged to Main') {
+    triggers {
+        // No need for polling; webhook handles this
+    }
+
+    environment {
+        BRANCH_NAME = "${env.GIT_BRANCH ?: 'unknown'}"
+    }
+
+    stages {
+        stage('Deploy if PR Merged') {
             when {
-                branch 'main'
+                expression {
+                    return env.BRANCH_NAME == 'origin/main' || env.BRANCH_NAME == 'main'
+                }
             }
             steps {
-                echo "Deploying after PR merged into main!"
-                // Add your deployment steps here
+                echo "PR merged into ${env.BRANCH_NAME}. Triggering deployment..."
+                // Add your real deploy steps here
             }
         }
     }
